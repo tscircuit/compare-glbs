@@ -1,20 +1,28 @@
 {
   "name": "@tscircuit/compare-glbs",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "module": "lib/index.ts",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
-  "files": ["lib", "dist"],
+  "files": [
+    "lib",
+    "dist"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/tscircuit/compare-glbs"
   },
-  "publishConfig": { "registry": "https://npm.pkg.github.com" },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "build": "tsup lib/index.ts --format esm --dts",
     "test": "bun test",
