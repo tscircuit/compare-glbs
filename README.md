@@ -3,7 +3,7 @@
 Measure the volumetric symmetric difference of two GLB models using Manifold WASM solid booleans.
 
 ```sh
-bun add https://jscdn.tscircuit.com/@tscircuit/compare-glbs/0.0.1
+bun add https://jscdn.tscircuit.com/@tscircuit/compare-glbs/0.0.1.tgz
 ```
 
 ```ts
