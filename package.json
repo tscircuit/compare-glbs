@@ -1,0 +1,36 @@
+{
+  "name": "@tscircuit/compare-glbs",
+  "version": "0.0.0",
+  "type": "module",
+  "module": "lib/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" }
+  },
+  "files": ["lib", "dist"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tscircuit/compare-glbs"
+  },
+  "publishConfig": { "registry": "https://npm.pkg.github.com" },
+  "scripts": {
+    "build": "tsup lib/index.ts --format esm --dts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "format": "biome format --write .",
+    "format:check": "biome format ."
+  },
+  "dependencies": {
+    "@gltf-transform/core": "^4.2.1",
+    "manifold-3d": "^3.3.2",
+    "gl-matrix": "^3.4.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "@types/bun": "latest",
+    "@biomejs/biome": "1.9.4",
+    "tsup": "^8.5.0"
+  }
+}
