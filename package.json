@@ -1,6 +1,6 @@
 {
   "name": "@tscircuit/compare-glbs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "module": "lib/index.ts",
   "main": "dist/index.js",
