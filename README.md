@@ -33,3 +33,5 @@ Node.js/Bun API. Manifold's WASM is provided by the `manifold-3d` dependency.
 `bun install`, `bun test`, `bun run typecheck`, `bun run format:check`, `bun run build`.
 Pushes to main automatically release to GitHub Packages using the handbook's
 pver workflow, accessible through jscdn.tscircuit.com.
+
+For normalized comparison, IoU is 1 for identical solids and 0 for disjoint solids.
