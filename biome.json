@@ -1,6 +1,14 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "formatter": { "indentStyle": "space" },
-  "javascript": { "formatter": { "semicolons": "asNeeded" } },
-  "files": { "ignore": ["dist", "node_modules"] }
+  "formatter": {
+    "indentStyle": "space"
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "asNeeded"
+    }
+  },
+  "files": {
+    "ignore": ["dist", "node_modules", "package.json"]
+  }
 }
