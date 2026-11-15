@@ -1,5 +1,4 @@
 import { NodeIO, type Document } from "@gltf-transform/core"
-import { mat4, vec3 } from "gl-matrix"
 import Module, { type Manifold, type ManifoldToplevel } from "manifold-3d"
 
 export type GlbInput = Uint8Array | ArrayBuffer
@@ -32,7 +31,8 @@ function solidFromDocument(doc: Document, m: ManifoldToplevel): Manifold {
       const positions: number[] = []
       const indices: number[] = []
       const matrix = node.getWorldMatrix()
-      const mirrored = mat4.determinant(matrix) < 0
+      if (!matrix.every(Number.isFinite))
+        throw new Error("Non-finite mesh transform")
       for (const primitive of mesh.listPrimitives()) {
         if (primitive.getMode() !== 4 || primitive.listTargets().length)
           throw new Error("Only static triangle meshes are supported")
@@ -40,12 +40,8 @@ function solidFromDocument(doc: Document, m: ManifoldToplevel): Manifold {
         if (!position) throw new Error("Mesh is missing POSITION")
         const offset = positions.length / 3
         for (let i = 0; i < position.getCount(); i++) {
-          const point = vec3.transformMat4(
-            vec3.create(),
-            position.getElement(i, [0, 0, 0]) as [number, number, number],
-            matrix,
-          )
-          if (!Array.from(point).every(Number.isFinite))
+          const point = position.getElement(i, [0, 0, 0])
+          if (!point.every(Number.isFinite))
             throw new Error("Non-finite mesh position")
           positions.push(...point)
         }
@@ -56,8 +52,6 @@ function solidFromDocument(doc: Document, m: ManifoldToplevel): Manifold {
           const triangle = [0, 1, 2].map(
             (j) => offset + (accessor ? accessor.getScalar(i + j) : i + j),
           )
-          if (mirrored)
-            [triangle[1], triangle[2]] = [triangle[2]!, triangle[1]!]
           indices.push(...triangle)
         }
       }
@@ -67,7 +61,15 @@ function solidFromDocument(doc: Document, m: ManifoldToplevel): Manifold {
         triVerts: new Uint32Array(indices),
       })
       meshData.merge()
-      const solid = new m.Manifold(meshData)
+      const localSolid = new m.Manifold(meshData)
+      let solid: Manifold
+      try {
+        // Keep world coordinates out of Float32Array. Manifold also handles
+        // triangle winding when the world transform includes a reflection.
+        solid = localSolid.transform(matrix)
+      } finally {
+        localSolid.delete()
+      }
       solids.push(solid)
       if (solid.status() !== "NoError" || solid.volume() <= 0)
         throw new Error(
