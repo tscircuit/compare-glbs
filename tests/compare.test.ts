@@ -53,6 +53,71 @@ test("partial overlap differs despite equal volumes", async () => {
   expect(result.differenceVolume).toBeCloseTo(1)
   expect(result.intersectionOverUnion).toBeCloseTo(1 / 3)
 })
+
+test("common world translation preserves thin-solid overlap", async () => {
+  const local = await compareGlbs(
+    await cube(0, 0.001),
+    await cube(0.0005, 0.001),
+  )
+  const translated = await compareGlbs(
+    await cube(10_000, 0.001),
+    await cube(10_000.0005, 0.001),
+  )
+  expect(translated.volumeA).toBeCloseTo(local.volumeA, 7)
+  expect(translated.volumeB).toBeCloseTo(local.volumeB, 7)
+  expect(translated.intersectionVolume).toBeCloseTo(local.intersectionVolume, 7)
+  expect(translated.intersectionOverUnion).toBeCloseTo(1 / 3, 6)
+})
+
+test("large world translation does not collapse a valid unit cube", async () => {
+  const result = await compareGlbs(
+    await cube(100_000_000),
+    await cube(100_000_000),
+  )
+  expect(result.volumeA).toBeCloseTo(1)
+  expect(result.volumeB).toBeCloseTo(1)
+  expect(result.intersectionOverUnion).toBeCloseTo(1)
+})
+
+test("nested rotation and reflected nonuniform scale preserve thin-solid overlap", async () => {
+  const io = new NodeIO()
+  const inputs = await Promise.all(
+    [0, 0.0005].map(async (x) => {
+      const doc = await io.readBinary(await cube(x, 0.001))
+      const scene = doc.getRoot().getDefaultScene()!
+      const child = scene.listChildren()[0]!
+      const parent = doc
+        .createNode()
+        .setTranslation([10_000, 10_000, 10_000])
+        .setRotation([0, 0, Math.SQRT1_2, Math.SQRT1_2])
+        .setScale([-2, 3, 4])
+        .addChild(child)
+      scene.addChild(parent)
+      return io.writeBinary(doc)
+    }),
+  )
+  const result = await compareGlbs(inputs[0]!, inputs[1]!)
+  expect(result.volumeA).toBeCloseTo(0.024, 7)
+  expect(result.volumeB).toBeCloseTo(0.024, 7)
+  expect(result.intersectionVolume).toBeCloseTo(0.012, 7)
+  expect(result.intersectionOverUnion).toBeCloseTo(1 / 3, 6)
+})
+
+test("rejects singular transforms and non-finite positions", async () => {
+  await expect(compareGlbs(await cube(0, 0), await cube())).rejects.toThrow()
+  const io = new NodeIO()
+  const doc = await io.readBinary(await cube())
+  doc
+    .getRoot()
+    .listMeshes()[0]!
+    .listPrimitives()[0]!
+    .getAttribute("POSITION")!
+    .setElement(0, [Number.NaN, 0, 0])
+  await expect(
+    compareGlbs(await io.writeBinary(doc), await cube()),
+  ).rejects.toThrow("Non-finite mesh position")
+})
+
 test("disjoint and contained solids", async () => {
   expect(
     (await compareGlbs(await cube(), await cube(2))).differenceVolume,
